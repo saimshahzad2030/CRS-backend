@@ -11,7 +11,7 @@ const jobRoutes = require('./src/routes/job.routes')
 const applicationRoutes = require('./src/routes/application.routes')
 const hiringRoutes = require('./src/routes/hiring.routes')
 const companyRoutes = require('./src/routes/company.routes')
-const countEverything = require('./src/services/all-entries')
+const student = require('./src/model/student.model')
 const app = express()
 //cors
 app.use(cors())
@@ -32,7 +32,8 @@ app.use('/api',jobRoutes)
 app.use('/api',emailRoutes)
 app.use('/api',tokenRoutes)
 app.get("/",async (req, res) => {
-  countEverything()
+  const students = await student.find({}) 
+  res.json(students);
 });
 
 
