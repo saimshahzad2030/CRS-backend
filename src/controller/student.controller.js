@@ -3,6 +3,7 @@ const catchAsync = require('../utils/catch-async')
 
 const User = require('../model/user.model')
 const studentModel = require('../model/student.model')
+const applicationModel = require('../model/application.model')
 
 
 
@@ -145,6 +146,7 @@ const deleteStudent = catchAsync(async (req, res) => {
             const email = findUser.email;
             await User.deleteOne({ _id:id })
             await studentModel.deleteMany({email})
+            await applicationModel.deleteMany({appliedBy:email})
             console.log('deleted succesfully')
             res.status(200).json({ message: `${email} Deleted Successfully` })
 
@@ -177,7 +179,8 @@ const deleteStudentDetails = catchAsync(async (req, res) => {
 const allCampusStudents = catchAsync(async (req, res) => {
     
       
-            const users = await Student.find({});
+    const users = await User.find({ role:'student'});
+
             res.status(200).json({ data: users, message: 'Students Fetched' })
         
       
