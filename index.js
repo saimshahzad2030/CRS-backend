@@ -11,17 +11,11 @@ const jobRoutes = require('./src/routes/job.routes')
 const applicationRoutes = require('./src/routes/application.routes')
 const hiringRoutes = require('./src/routes/hiring.routes')
 const companyRoutes = require('./src/routes/company.routes')
-const student = require('./src/model/student.model')
 const app = express()
-//cors
 app.use(cors())
 app.use(express.json())
-//connectDB
+
 connectDb()
-
-
-//middleware
-
 //routes
 app.use('/api',routerUser)
 app.use('/api',companyRoutes)
@@ -32,8 +26,7 @@ app.use('/api',jobRoutes)
 app.use('/api',emailRoutes)
 app.use('/api',tokenRoutes)
 app.get("/",async (req, res) => {
-  const students = await student.find({}) 
-  res.json(students);
+  res.json('Hello World');
 });
 
 
