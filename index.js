@@ -11,6 +11,7 @@ const jobRoutes = require('./src/routes/job.routes')
 const applicationRoutes = require('./src/routes/application.routes')
 const hiringRoutes = require('./src/routes/hiring.routes')
 const companyRoutes = require('./src/routes/company.routes')
+const countEverything = require('./src/services/all-entries')
 const app = express()
 //cors
 app.use(cors())
@@ -30,10 +31,9 @@ app.use('/api',studentRoutes)
 app.use('/api',jobRoutes)
 app.use('/api',emailRoutes)
 app.use('/api',tokenRoutes)
-// app.get("/",async (req, res) => {
-//   const feedback = await feedbacks.find({}) 
-//   res.json(feedback);
-// });
+app.get("/",async (req, res) => {
+  countEverything()
+});
 
 
 app.listen(PORT, () => console.log(`Server runing at PORT ${PORT}`));
