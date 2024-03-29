@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const jobSchema = new mongoose.Schema({
+    companyemail:{type:String,required:true},
     companyname:{type:String,required:true},
     companymessage:{type:String,required:true},
     position:{type:String,required:true},

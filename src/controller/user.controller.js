@@ -5,7 +5,6 @@ const jwt = require('../middleware/jwt')
 const BlockedUser = require('../model/blocked-user.model')
 
 
-
 const signup = async (req, res) => {
     try {
         const { email, username, password,role ,name} = req.body;
@@ -80,8 +79,8 @@ const login = async (req, res) => {
                     res.status(200).json({ message: 'login successful', token, role: user.role })
                 }
                 else {
-                    const token = jwt.sign({ email, role: 'company' })
-                    res.status(200).json({ message: 'login successful', token, role: user.role })
+                    const token = jwt.sign({ email, role: 'company',name:user.name })
+                    res.status(200).json({ message: 'login successful',name:user.name, token, role: user.role })
                 }
             }
         }

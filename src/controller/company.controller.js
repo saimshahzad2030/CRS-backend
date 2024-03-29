@@ -1,31 +1,29 @@
-
-
+const User = require('../model/user.model')
+const Job = require('../model/job.model')
 const deleteCompany = async (req, res) => {
     try {
         const user = req?.user;
-        console.log(user)
-        const { email } = req.body
+        const { id,email } = req.query
         if (user.role === 'admin') {
 
-            if (!email) {
+            if (!id || !email) {
                 res.status(401).send('Enter Email')
             }
 
 
 
             else {
-                const findUser = await User.findOne({ email });
-                console.log(findUser)
+                const findUser = await User.findOne({ id });
                 if (!findUser) {
-                    res.status(401).send('No Student Found')
+                    res.status(401).send('No Company Found')
+                    return
                 }
-                else {
-                    await User.deleteOne({ email, role: 'company' })
-                    await BookedParking.deleteMany({ bookedBy: email })
-                    console.log('deleted succesfully')
-                    res.status(200).json({ message: `${email} Deleted Successfully` })
+              
+                    await User.deleteOne({ id })
+                    await Job.deleteMany({ companyemail: email })
+                    res.status(200).json({ message: `${findUser.email} Deleted Successfully` })
 
-                }
+                
             }
         }
         else {
@@ -54,4 +52,4 @@ const allCompanies = async (req, res) => {
     }
 }
 
-module.exports = { deleteCompany, allCompanies,addJobController }
+module.exports = { deleteCompany, allCompanies }

@@ -1,5 +1,5 @@
 
-const { deleteStudent, allStudents, addStudentDetailController, updateStudentDetailController, fetchStudentDetailsController } = require('../controller/student.controller');
+const { deleteStudent, allStudentsDetails, addStudentDetailController, updateStudentDetailController, fetchStudentDetailsController, allCampusStudents, allStudentsDetailsAdmin, deleteStudentDetails } = require('../controller/student.controller');
 const jwt = require('../middleware/jwt')
 const express = require('express')
 
@@ -13,8 +13,20 @@ const studentRoutes = express.Router()
    
    
     studentRoutes
-    .route('/students')
-    .get(jwt.verifyAdmin,allStudents)
+    .route('/unemployed-students')
+    .get(jwt.verifyUser,allStudentsDetails)
+    
+    studentRoutes
+    .route('/all-students')
+
+    .get(jwt.verifyAdmin,allCampusStudents)
+
     .delete(jwt.verifyAdmin,deleteStudent)
+
+    studentRoutes
+    .route('/all-student-details')
+
+    .get(jwt.verifyAdmin,allStudentsDetailsAdmin)
+    .delete(jwt.verifyAdmin,deleteStudentDetails)
 
 module.exports = studentRoutes;

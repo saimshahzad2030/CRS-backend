@@ -1,7 +1,8 @@
 const Student = require('../model/student.model')
 const catchAsync = require('../utils/catch-async')
 
-
+const User = require('../model/user.model')
+const studentModel = require('../model/student.model')
 
 
 
@@ -97,48 +98,16 @@ const fetchStudentDetailsController = catchAsync(async (req, res) => {
 
 })
 
-const deleteStudent = async (req, res) => {
+
+const allStudentsDetails = async (req, res) => {
     try {
-        const user = req?.user;
-        console.log(user)
-        const { email } = req.body
-        if (user.role === 'admin') {
-
-            if (!email) {
-                res.status(401).send('Enter Email')
-            }
-
-
-
-            else {
-                const findUser = await Student.findOne({ email });
-                console.log(findUser)
-                if (!findUser) {
-                    res.status(401).send('No Student Found')
-                }
-                else {
-                    await Student.deleteOne({ email, role: 'student' })
-                    await BookedParking.deleteMany({ bookedBy: email })
-                    console.log('deleted succesfully')
-                    res.status(200).json({ message: `${email} Deleted Successfully` })
-
-                }
-            }
+        if ( req?.user.role === 'company') {
+            const users = await Student.find({employmentstatus:'jobless'});
+            res.status(200).json({ data: users, message: 'Students Fetched' })
         }
-        else {
-
-            res.status(520).json({ message: "You are not authorized" });
-        }
-    }
-    catch (error) {
-        return res.status(520).json({ message: "internal server error", error: error.message });
-    }
-}
-
-const allStudents = async (req, res) => {
-    try {
-        if (req?.user.role == 'admin') {
-            const users = await Student.find({ role: 'student' });
+        else if(req?.user.role === 'admin'){
+            
+            const users = await Student.find({});
             res.status(200).json({ data: users, message: 'Students Fetched' })
         }
         else {
@@ -152,4 +121,70 @@ const allStudents = async (req, res) => {
 
 
 
-module.exports = { allStudents, deleteStudent, addStudentDetailController, updateStudentDetailController,fetchStudentDetailsController }
+
+
+//admin
+const allStudentsDetailsAdmin = catchAsync(async (req, res) => {
+   
+            const users = await Student.find({});
+            res.status(200).json({ data: users, message: 'Students Fetched' })
+        
+})
+
+const deleteStudent = catchAsync(async (req, res) => {
+    const {id} = req.query;
+    if (!id) {
+        res.status(401).send('Enter Id')
+    }
+    else {
+        const findUser = await User.findOne({ _id:id });
+        if (!findUser) {
+            res.status(401).send('No Student Found')
+        }
+        else {
+            const email = findUser.email;
+            await User.deleteOne({ _id:id })
+            await studentModel.deleteMany({email})
+            console.log('deleted succesfully')
+            res.status(200).json({ message: `${email} Deleted Successfully` })
+
+        }
+    }
+
+
+})
+
+const deleteStudentDetails = catchAsync(async (req, res) => {
+    const {id} = req.query;
+    if (!id) {
+        res.status(401).send('Enter Id')
+    }
+    else {
+        const findUser = await Student.findOne({ _id:id });
+        if (!findUser) {
+            res.status(401).send('No Student details Found')
+        }
+        else {
+            await Student.deleteOne({ _id:id })
+            console.log('deleted succesfully')
+            res.status(200).json({ message: `Deleted Successfully` })
+
+        }
+    }
+
+
+})
+const allCampusStudents = catchAsync(async (req, res) => {
+    
+      
+            const users = await Student.find({});
+            res.status(200).json({ data: users, message: 'Students Fetched' })
+        
+      
+    
+   
+})
+
+
+
+module.exports = { deleteStudentDetails,allStudentsDetailsAdmin,allStudentsDetails,allCampusStudents ,deleteStudent, addStudentDetailController, updateStudentDetailController,fetchStudentDetailsController }

@@ -10,6 +10,7 @@ const studentSchema = new mongoose.Schema({
     position:{type:String,required:true},
     experience:{type:String,required:true},
     availability:{type:String,required:true},
+    employmentstatus:{type:String,default:'jobless'}
 })
 
 module.exports = mongoose.model('student',studentSchema)

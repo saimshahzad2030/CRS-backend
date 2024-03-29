@@ -1,6 +1,6 @@
 const Application = require('../model/application.model')
 const catchAsync = require('..//utils/catch-async')
-
+const HiredStudents = require('../model/hired-students.model')
 const addApplicationController = catchAsync(async (req, res) => {
     console.log(req?.user?.role)
     if (req?.user?.role != 'student') {
@@ -56,4 +56,54 @@ const deleteApplicationController = catchAsync(async (req, res) => {
             res.status(200).json({message:'application deleted succesfully'});
     }
 })
-module.exports = {addApplicationController,userApplicationsController,deleteApplicationController}
+
+
+const companyApplicationsController = catchAsync(async (req, res) => {
+    console.log(req?.user?.role)
+    if (req?.user?.role != 'company') {
+        res.status(401).json({ message: 'You are not authorized' })
+    }
+    else {
+             const applications = await Application.find({companyname:req.user.name,status:'pending'});
+            res.status(200).json({data:applications,message:'applications fetched succesfully'});
+    }
+})
+
+
+const updateUserApplicationController = catchAsync(async (req, res) => {
+    if (req?.user?.role != 'company') {
+        res.status(401).json({ message: 'You are not authorized' })
+
+    }
+    else {
+
+        const { id,status  } = req.body;
+
+        if (!id || !status) {
+            res.status(400).send('All fields required');
+            return;
+        }
+
+        else {
+            const email = req?.user.email;
+            const studentDetailExist =await  Application.findOne({ _id:id })
+            if (!studentDetailExist) {
+                res.status(402).json({ message: 'No entries found' })
+                return;
+            }
+            const filter = { _id:id  };
+            const update = { $set: { status } };
+            await Application.updateOne(filter, update);
+            if(status ==='approve'){
+             const  application = new HiredStudents({email:studentDetailExist.appliedBy ,hiredBy:req.user.name,studentId:studentDetailExist.studentId, position:studentDetailExist.position,companyemail:email });
+                await application.save();
+            }
+        
+            res.status(200).json({ message: 'updated Succesfully' });
+
+        }
+
+    }
+})
+
+module.exports = {addApplicationController,userApplicationsController,deleteApplicationController,companyApplicationsController,updateUserApplicationController}
