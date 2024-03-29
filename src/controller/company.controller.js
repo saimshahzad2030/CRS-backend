@@ -9,17 +9,14 @@ const deleteCompany = async (req, res) => {
             if (!id || !email) {
                 res.status(401).send('Enter Email')
             }
-
-
-
             else {
-                const findUser = await User.findOne({ id });
+                const findUser = await User.findOne({ _id:id });
                 if (!findUser) {
                     res.status(401).send('No Company Found')
                     return
                 }
               
-                    await User.deleteOne({ id })
+                    await User.deleteOne({ _id:id })
                     await Job.deleteMany({ companyemail: email })
                     res.status(200).json({ message: `${findUser.email} Deleted Successfully` })
 
