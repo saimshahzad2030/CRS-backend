@@ -92,7 +92,7 @@ const updateUserApplicationController = catchAsync(async (req, res) => {
                 return;
             }
             const filter = { _id:id  };
-            const update = { $set: { status } };
+            const update = { $set: { status:status } };
             await Application.updateOne(filter, update);
             if(status ==='approve'){
              const  application = new HiredStudents({email:studentDetailExist.appliedBy ,hiredBy:req.user.name,studentId:studentDetailExist.studentId, position:studentDetailExist.position,companyemail:email });
