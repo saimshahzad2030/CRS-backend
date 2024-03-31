@@ -2,6 +2,7 @@ const catchAsync = require('..//utils/catch-async')
 const HiredStudents = require('../model/hired-students.model')
 const Application =require('../model/application.model')
 const Student = require('../model/student.model')
+const { addApplicationController } = require('./application.controller')
 const hiredStudentsController = catchAsync(async (req, res) => {
     console.log(req?.user?.role)
     if (req?.user?.role != 'company') {
@@ -27,6 +28,12 @@ const rejectHiringController = catchAsync(async (req, res) => {
             const hiredOne =await HiredStudents.findOne({_id:id})
             console.log(hiredOne)
             await HiredStudents.deleteOne({_id:id});
+
+            const application = await Application.findOne({appliedBy:hiredOne.email,position:hiredOne.position})
+            console.log(application)
+            const applicationFilter = {appliedBy:hiredOne.email,position:hiredOne.position}
+            const applicationUpdate = {$set:{status:'reject'}}
+            await Application.updateOne(applicationFilter,applicationUpdate)
             const filter1 = {email };
             const update2 = { $set: { employmentstatus:'jobless' } };
             await Student.updateOne(filter1, update2);

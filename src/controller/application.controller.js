@@ -52,7 +52,10 @@ const deleteApplicationController = catchAsync(async (req, res) => {
                 return res.status(400).send('all fields required')
             }
             const email = req?.user.email;
+             const application = await Application.findOne({_id:id,appliedBy:email});
+             const position = application.position;
              await Application.deleteOne({_id:id,appliedBy:email});
+             await HiredStudents.deleteOne({email:email,position:position})
             res.status(200).json({message:'application deleted succesfully'});
     }
 })
@@ -92,7 +95,7 @@ const updateUserApplicationController = catchAsync(async (req, res) => {
                 return;
             }
             const filter = { _id:id  };
-            const update = { $set: { status:status } };
+            const update = { $set: { status } };
             await Application.updateOne(filter, update);
             if(status ==='approve'){
              const  application = new HiredStudents({email:studentDetailExist.appliedBy ,hiredBy:req.user.name,studentId:studentDetailExist.studentId, position:studentDetailExist.position,companyemail:email });
