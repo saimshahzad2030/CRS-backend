@@ -1,27 +1,28 @@
 const Application = require('../model/application.model')
 const catchAsync = require('..//utils/catch-async')
 const HiredStudents = require('../model/hired-students.model')
+const Jobs = require('../model/job.model')
 const addApplicationController = catchAsync(async (req, res) => {
-    console.log(req?.user?.role)
-    if (req?.user?.role != 'student') {
+    if (req?.user?.user?.role != 'student') {
         res.status(401).json({ message: 'You are not authorized' })
     }
     else {
-        const { companyname, position,experience,location,availability,studentId } = req.body;
+        const { jobId } = req.body;
 
-        if (!companyname || !position || !experience || !location || !availability || !studentId) {
+        if (!jobId ) {
             res.status(400).send('All fields required');
             return;
         }
 
         else {
-            const email = req?.user.email;
-            const applicationAlreadyPending = await Application.findOne({companyname, position,appliedBy:email,studentId})
-            console.log(applicationAlreadyPending)
+            const email = req?.user.user?.email;
+            const studentId = req?.user?.user?._id;
+            const applicationAlreadyPending = await Application.findOne({jobId,studentId})
+            const job = await Jobs.findOne({_id:jobId})
             if(applicationAlreadyPending){
                 return res.status(400).send('Already Pending')
             }
-            const application = new Application({companyname,studentId, position,experience,location,availability,status:'pending',appliedBy:email });
+            const application = new Application({jobId,companyId:job.companyId,companyname:job.companyname,studentId, position:job.position,experience:job.experience,location:job.location,availability:job.availability,status:'pending',appliedBy:email });
             await application.save();
             res.status(200).json({data:application});
 
@@ -30,51 +31,51 @@ const addApplicationController = catchAsync(async (req, res) => {
     }
 })
 const userApplicationsController = catchAsync(async (req, res) => {
-    console.log(req?.user?.role)
-    if (req?.user?.role != 'student') {
+    console.log(req?.user?.user?.role)
+    if (req?.user?.user.role != 'student') {
         res.status(401).json({ message: 'You are not authorized' })
     }
     else {
        
-            const email = req?.user.email;
-            const application = await Application.find({appliedBy:email});
+            const studentId = req?.user?.user?._id;
+            const application = await Application.find({studentId});
             res.status(200).json({data:application});
     }
 })
 const deleteApplicationController = catchAsync(async (req, res) => {
-    console.log(req?.user?.role)
-    if (req?.user?.role != 'student') {
+    console.log(req?.user?.user?.role)
+    if (req?.user?.user.role != 'student') {
         res.status(401).json({ message: 'You are not authorized' })
     }
     else {
-            const {id} = req.body;
+            const {id} = req.query;
             if(!id){
                 return res.status(400).send('all fields required')
             }
-            const email = req?.user.email;
-             const application = await Application.findOne({_id:id,appliedBy:email});
-             const position = application.position;
-             await Application.deleteOne({_id:id,appliedBy:email});
-             await HiredStudents.deleteOne({email:email,position:position})
+             const application = await Application.findOne({_id:id});
+             const studentId = application?.studentId;
+             const position = application?.position;
+             await Application.deleteOne({_id:id});
+             await HiredStudents.deleteOne({studentId,position})
             res.status(200).json({message:'application deleted succesfully'});
     }
 })
 
 
 const companyApplicationsController = catchAsync(async (req, res) => {
-    console.log(req?.user?.role)
-    if (req?.user?.role != 'company') {
+    if (req?.user?.user?.role != 'company') {
         res.status(401).json({ message: 'You are not authorized' })
     }
     else {
-             const applications = await Application.find({companyname:req.user.name,status:'pending'});
+        const companyId = req?.user?.user?._id;
+             const applications = await Application.find({companyId});
             res.status(200).json({data:applications,message:'applications fetched succesfully'});
     }
 })
 
 
 const updateUserApplicationController = catchAsync(async (req, res) => {
-    if (req?.user?.role != 'company') {
+    if (req?.user?.user?.role != 'company') {
         res.status(401).json({ message: 'You are not authorized' })
 
     }
@@ -88,7 +89,7 @@ const updateUserApplicationController = catchAsync(async (req, res) => {
         }
 
         else {
-            const email = req?.user.email;
+            const email = req?.user?.user?.email;
             const studentDetailExist =await  Application.findOne({ _id:id })
             if (!studentDetailExist) {
                 res.status(402).json({ message: 'No entries found' })
@@ -98,8 +99,9 @@ const updateUserApplicationController = catchAsync(async (req, res) => {
             const update = { $set: { status } };
             await Application.updateOne(filter, update);
             if(status ==='approve'){
-             const  application = new HiredStudents({email:studentDetailExist.appliedBy ,hiredBy:req.user.name,studentId:studentDetailExist.studentId, position:studentDetailExist.position,companyemail:email });
-                await application.save();
+                const companyId = req?.user?.user?._id;
+                const  hiring = new HiredStudents({email:studentDetailExist.appliedBy ,hiredBy:req.user.user.name,studentId:studentDetailExist.studentId, position:studentDetailExist.position,companyemail:email,companyId });
+                await hiring.save();
             }
         
             res.status(200).json({ message: 'updated Succesfully' });

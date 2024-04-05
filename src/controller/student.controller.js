@@ -8,30 +8,30 @@ const applicationModel = require('../model/application.model')
 
 
 const addStudentDetailController = catchAsync(async (req, res) => {
-    console.log(req.user.role)
-    if (req?.user?.role != 'student') {
+    if (req?.user?.user?.role != 'student') {
         res.status(401).json({ message: 'You are not authorized' })
 
     }
     else {
 
-        const { firstname, lastname,experience, studentId, age, faculty, obtainedmarks, position, availability } = req.body;
+        const { firstname, lastname,experience, age, faculty, obtainedmarks, position, availability } = req.body;
 
-        if (!firstname || !lastname || !experience || !studentId || !age || !faculty || !obtainedmarks || !position || !availability) {
+        if (!firstname || !lastname || !experience  || !age || !faculty || !obtainedmarks || !position || !availability) {
             res.status(400).send('All fields required');
             return;
         }
 
         else {
-            const email = req?.user.email;
-            const isStudentAlreadyExist = await Student.findOne({ email })
+            const email = req?.user?.user?.email;
+            const studentId = req?.user?.user?._id;
+            const isStudentAlreadyExist = await Student.findOne({ studentId })
             if (isStudentAlreadyExist) {
                 res.status(402).json({ message: "Already Exist" })
                 return
             }
 
             const studentDetails = new Student({
-                email, firstname,experience, lastname, studentId, age, faculty, obtainedmarks, position, availability
+                email, firstname,experience,email, lastname, studentId, age, faculty, obtainedmarks, position, availability
             });
 
 
@@ -46,27 +46,28 @@ const addStudentDetailController = catchAsync(async (req, res) => {
 
 
 const updateStudentDetailController = catchAsync(async (req, res) => {
-    if (req?.user?.role != 'student') {
+    if (req?.user?.user?.role != 'student') {
         res.status(401).json({ message: 'You are not authorized' })
 
     }
     else {
 
-        const { firstname, lastname, studentId, age,experience, faculty, obtainedmarks, position, availability } = req.body;
-
-        if (!firstname || !lastname || !studentId || !experience || !age || !faculty || !obtainedmarks || !position || !availability) {
+        const { firstname, lastname, age,experience, faculty, obtainedmarks, position, availability } = req.body;
+        console.log(req.body)
+        if (!firstname || !lastname  || !experience || !age || !faculty || !obtainedmarks || !position || !availability) {
             res.status(400).send('All fields required');
             return;
         }
 
         else {
-            const email = req?.user.email;
-            const studentDetailExist = Student.findOne({ email })
+            const email = req?.user?.user?.email;
+            const studentId = req?.user?.user?._id;
+            const studentDetailExist = Student.findOne({ studentId })
             if (!studentDetailExist) {
                 res.status(402).json({ message: 'No entries found' })
                 return;
             }
-            const filter = { email }; // Specify the email value you want to match
+            const filter = { studentId };
             const update = { $set: { firstname, lastname,experience, studentId, age, faculty, obtainedmarks, position, availability } };
 
             await Student.updateOne(filter, update);
@@ -80,14 +81,14 @@ const updateStudentDetailController = catchAsync(async (req, res) => {
 })
 
 const fetchStudentDetailsController = catchAsync(async (req, res) => {
-    console.log(req.user.role)
-    if (req?.user?.role != 'student') {
+    console.log(req?.user?.user?.role)
+    if (req?.user?.user?.role != 'student') {
         res.status(401).json({ message: 'You are not authorized' })
         return;
     }
 
-    const email = req?.user.email;
-    const studentDetailExist = await Student.findOne({ email })
+    const studentId = req?.user?.user?._id;
+    const studentDetailExist = await Student.findOne({ studentId })
     if (!studentDetailExist) {
         res.status(400).json({data:studentDetailExist, message: 'No details found' })
 
@@ -102,11 +103,13 @@ const fetchStudentDetailsController = catchAsync(async (req, res) => {
 
 const allStudentsDetails = async (req, res) => {
     try {
-        if ( req?.user.role === 'company') {
+      console.log(req?.user?.user?.role)
+
+        if ( req?.user?.user?.role === 'company') {
             const users = await Student.find({employmentstatus:'jobless'});
             res.status(200).json({ data: users, message: 'Students Fetched' })
         }
-        else if(req?.user.role === 'admin'){
+        else if(req?.user?.user?.role === 'admin'){
             
             const users = await Student.find({});
             res.status(200).json({ data: users, message: 'Students Fetched' })
@@ -178,7 +181,6 @@ const deleteStudentDetails = catchAsync(async (req, res) => {
 })
 const allCampusStudents = catchAsync(async (req, res) => {
     
-      
     const users = await User.find({ role:'student'});
 
             res.status(200).json({ data: users, message: 'Students Fetched' })

@@ -2,9 +2,9 @@ const User = require('../model/user.model')
 const Job = require('../model/job.model')
 const deleteCompany = async (req, res) => {
     try {
-        const user = req?.user;
+        const user = req?.user?.user?.role;
         const { id,email } = req.query
-        if (user.role === 'admin') {
+        if (user  === 'admin') {
 
             if (!id || !email) {
                 res.status(401).send('Enter Email')
@@ -36,7 +36,7 @@ const deleteCompany = async (req, res) => {
 
 const allCompanies = async (req, res) => {
     try {
-        if (req?.user.role == 'admin') {
+        if (req?.user?.user?.role == 'admin') {
             const users = await User.find({ role: 'company' });
             res.status(200).json({ data: users, message: 'Commpanies Fetched' })
         }

@@ -34,7 +34,7 @@ const signup = async (req, res) => {
             });
 
             await newUser.save();
-            const token = jwt.sign({ email,name, role });
+            const token = jwt.sign({newUser});
             return res.status(200).json({ message: 'Signup Successful', token,role });
         }
     } catch (error) {
@@ -70,16 +70,16 @@ const login = async (req, res) => {
 
             if (user) {
                 if (user.role === 'admin') {
-                    const token = jwt.sign({ email, role: 'admin' ,name:user.name})
+                    const token = jwt.sign({user})
                     console.log(user)
                     res.status(200).json({ message: 'login successful', token, role: user.role })
                 }
                 else if(user.role === 'student'){
-                    const token = jwt.sign({ email, role: 'student' })
+                    const token = jwt.sign({user})
                     res.status(200).json({ message: 'login successful', token, role: user.role })
                 }
                 else {
-                    const token = jwt.sign({ email, role: 'company',name:user.name })
+                    const token = jwt.sign({user})
                     res.status(200).json({ message: 'login successful',name:user.name, token, role: user.role })
                 }
             }

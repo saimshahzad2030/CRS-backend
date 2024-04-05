@@ -4,19 +4,18 @@ const Application =require('../model/application.model')
 const Student = require('../model/student.model')
 const { addApplicationController } = require('./application.controller')
 const hiredStudentsController = catchAsync(async (req, res) => {
-    console.log(req?.user?.role)
-    if (req?.user?.role != 'company') {
+    console.log(req?.user?.user?.role)
+    if (req?.user?.user?.role != 'company') {
         res.status(401).json({ message: 'You are not authorized' })
     }
     else {
-            const email = req?.user.email;
-            const hirings = await HiredStudents.find({companyemail:email});
+            const companyId = req?.user?.user?._id;
+            const hirings = await HiredStudents.find({companyId});
             res.status(200).json({data:hirings});
     }
 })
 const rejectHiringController = catchAsync(async (req, res) => {
-    console.log(req?.user?.role)
-    if (req?.user?.role != 'company') {
+    if (req?.user?.user?.role != 'company') {
         res.status(401).json({ message: 'You are not authorized' })
     }
     else {
@@ -24,14 +23,13 @@ const rejectHiringController = catchAsync(async (req, res) => {
             if(!id){
                 return res.status(400).send('all fields required')
             }
-            const email = req?.user.email;
+            const email = req?.user?.user.email;
             const hiredOne =await HiredStudents.findOne({_id:id})
-            console.log(hiredOne)
             await HiredStudents.deleteOne({_id:id});
 
-            const application = await Application.findOne({appliedBy:hiredOne.email,position:hiredOne.position})
+            const application = await Application.findOne({studentId:hiredOne.studentId,position:hiredOne.position})
             console.log(application)
-            const applicationFilter = {appliedBy:hiredOne.email,position:hiredOne.position}
+            const applicationFilter = {studentId:hiredOne.studentId,position:hiredOne.position}
             const applicationUpdate = {$set:{status:'reject'}}
             await Application.updateOne(applicationFilter,applicationUpdate)
             const filter1 = {email };
@@ -43,29 +41,31 @@ const rejectHiringController = catchAsync(async (req, res) => {
 
 
 const hireStudentController = catchAsync(async (req, res) => {
-    if (req?.user?.role != 'company') {
+    if (req?.user?.user?.role != 'company') {
         res.status(401).json({ message: 'You are not authorized' })
     }
     else {
-       const {email,studentId,position} = req.body
-       if(!email || !studentId || !position ){
+       const {studentId,position} = req.body
+       if(!studentId || !position ){
         return res.status(400).send('All fields required')
        }
-       const companyEmail = req?.user.email;
-       const studentDetailExist = await Student.findOne({ email })
+       const companyEmail = req?.user?.user?.email;
+       const studentDetailExist = await Student.findOne({ studentId })
        if (!studentDetailExist) {
            res.status(402).json({ message: 'No entries found' })
            return;
        }
-       const filter = {email };
+       const email = studentDetailExist.email;
+       const filter = {studentId };
        const update = { $set: { employmentstatus:'hired' } };
 
        await Student.updateOne(filter, update);
-       const hiringExist = await HiredStudents.findOne({email ,hiredBy:req.user.name,studentId, position,companyemail:companyEmail})
+       const companyId = req?.user?.user?._id;
+       const hiringExist = await HiredStudents.findOne({studentId, position,companyId})
        if(hiringExist){
         return res.status(400).send('Already Exist')
        }
-        const  newHiring = new HiredStudents({email ,hiredBy:req.user.name,studentId,companyemail:companyEmail ,position});
+        const  newHiring = new HiredStudents({email ,hiredBy:req?.user?.user?.name,studentId,companyemail:companyEmail ,position,companyId});
                 await newHiring.save();
             
             res.status(200).json({data:newHiring});
