@@ -32,7 +32,7 @@ const addApplicationController = catchAsync(async (req, res) => {
 })
 const userApplicationsController = catchAsync(async (req, res) => {
     console.log(req?.user?.user?.role)
-    if (req?.user?.user.role != 'student') {
+    if (req?.user?.user?.role != 'student') {
         res.status(401).json({ message: 'You are not authorized' })
     }
     else {

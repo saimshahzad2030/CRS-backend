@@ -53,7 +53,7 @@ const jwtConfig = {
                   else {
                       req.user = decoded
                     //   console.log(req.user)
-                      res.status(200).json({message:"User Authorized",role:decoded.role});
+                      res.status(200).json({message:"User Authorized",role:decoded.user.role});
                    
       
                   }
@@ -77,17 +77,19 @@ const jwtConfig = {
           if(authHeader){
               const [bearer,token] = authHeader.split(" ");;
                 jwt.verify(token, JWT_SECRET_KEY, function (err, decoded) {
+                console.log(decoded.user)
                   if (err) {
                       res.status(401).send("You are not authorized");
                        
                   }
-                  else if(decoded.role !== 'admin'){
-                    console.log(decoded.role)
+                  else if(decoded.user.role !== 'admin'){
+                    console.log(decoded.newUser.role)
                     res.status(401).send("You are not authorized");
 
                   }
                   else {
                       req.user = decoded
+                    console.log('authorized')
                       next()
       
                   }
@@ -100,7 +102,6 @@ const jwtConfig = {
               }
           }
           catch(error){
-              // console.log(err);
               res.status(520).send(error)
           }
           
