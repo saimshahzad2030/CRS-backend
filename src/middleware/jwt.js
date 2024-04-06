@@ -51,8 +51,9 @@ const jwtConfig = {
                        
                   }
                   else {
-                      req.user = decoded
-                      res.status(200).json({message:"User Authorized",role:decoded.role});
+                    console.log(decoded.user.role)
+                    //   req.user = decoded
+                      res.status(200).json({message:"User Authorized",role:decoded.user.role});
                    
       
                   }

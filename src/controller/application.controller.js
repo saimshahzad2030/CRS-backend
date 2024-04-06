@@ -24,6 +24,7 @@ const addApplicationController = catchAsync(async (req, res) => {
                 return res.status(400).send('Already Pending')
             }
             const job = await Jobs.findOne({_id:jobId})
+            console.log(job)
             const application = new Application({jobId,companyId:job.companyId,companyname:job.companyname,studentId, position:job.position,experience:job.experience,location:job.location,availability:job.availability,status:'pending',appliedBy:email });
             await application.save();
             res.status(200).json({data:application});
