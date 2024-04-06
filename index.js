@@ -69,19 +69,14 @@ app.get("/",async (req, res) => {
 const server =  app.listen(PORT, () => console.log(`Server runing at PORT ${PORT}`));
 
 const io = new Server(server, {
-  cors: { origin: '*' }
+  cors: { origin: '*' },
+  transports: ['websocket']
 });
-const likes  = 0;
 io.on('connect',(socket)=>{
-  socket.emit('likeUpdate',likes)
-  socket.on('liked',()=>{
-    likes++;
-    socket.emit('likeUpdate',likes);
-    socket.broadcast.emit('likeUpdate',likes)
-  })
   socket.on('statusChanged', ( id,status)=>{
     socket.emit('updatedStatus',id,status);
     socket.broadcast.emit('updatedStatus',id,status)
 });
+
 })
 
