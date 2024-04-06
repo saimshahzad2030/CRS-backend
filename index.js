@@ -85,5 +85,3 @@ io.on('connect',(socket)=>{
 });
 })
 
-
-module.exports = { io };
