@@ -11,6 +11,8 @@ const jobRoutes = require('./src/routes/job.routes')
 const applicationRoutes = require('./src/routes/application.routes')
 const hiringRoutes = require('./src/routes/hiring.routes')
 const companyRoutes = require('./src/routes/company.routes')
+const {Server} = require('socket.io')
+
 const app = express()
 app.use(cors())
 app.use(express.json())
@@ -28,6 +30,24 @@ app.use('/api',tokenRoutes)
 app.get("/",async (req, res) => {
   res.json('Hello World');
 });
+const server =  app.listen(PORT, () => console.log(`Server runing at PORT ${PORT}`));
+
+const io = new Server(server, {
+  cors: { origin: '*' }
+});
+const likes  = 0;
+io.on('connect',(socket)=>{
+  socket.emit('likeUpdate',likes)
+  socket.on('liked',()=>{
+    likes++;
+    socket.emit('likeUpdate',likes);
+    socket.broadcast.emit('likeUpdate',likes)
+  })
+  socket.on('statusChanged', ( id,status)=>{
+    socket.emit('updatedStatus',id,status);
+    socket.broadcast.emit('updatedStatus',id,status)
+});
+})
 
 
-app.listen(PORT, () => console.log(`Server runing at PORT ${PORT}`));
+module.exports = { app, io };

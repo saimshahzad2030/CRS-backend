@@ -2,13 +2,14 @@ const Application = require('../model/application.model')
 const catchAsync = require('..//utils/catch-async')
 const HiredStudents = require('../model/hired-students.model')
 const Jobs = require('../model/job.model')
+const {io} = require('../../index')
 const addApplicationController = catchAsync(async (req, res) => {
     if (req?.user?.user?.role != 'student') {
         res.status(401).json({ message: 'You are not authorized' })
     }
     else {
         const { jobId } = req.body;
-
+        console.log(jobId)
         if (!jobId ) {
             res.status(400).send('All fields required');
             return;
@@ -18,10 +19,11 @@ const addApplicationController = catchAsync(async (req, res) => {
             const email = req?.user.user?.email;
             const studentId = req?.user?.user?._id;
             const applicationAlreadyPending = await Application.findOne({jobId,studentId})
-            const job = await Jobs.findOne({_id:jobId})
+            
             if(applicationAlreadyPending){
                 return res.status(400).send('Already Pending')
             }
+            const job = await Jobs.findOne({_id:jobId})
             const application = new Application({jobId,companyId:job.companyId,companyname:job.companyname,studentId, position:job.position,experience:job.experience,location:job.location,availability:job.availability,status:'pending',appliedBy:email });
             await application.save();
             res.status(200).json({data:application});
@@ -98,6 +100,7 @@ const updateUserApplicationController = catchAsync(async (req, res) => {
             const filter = { _id:id  };
             const update = { $set: { status } };
             await Application.updateOne(filter, update);
+            
             if(status ==='approve'){
                 const companyId = req?.user?.user?._id;
                 const  hiring = new HiredStudents({email:studentDetailExist.appliedBy ,hiredBy:req.user.user.name,studentId:studentDetailExist.studentId, position:studentDetailExist.position,companyemail:email,companyId });

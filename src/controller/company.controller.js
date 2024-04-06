@@ -1,6 +1,9 @@
 const User = require('../model/user.model')
 const Job = require('../model/job.model')
 const deleteCompany = async (req, res) => {
+
+    //function to add two numbers
+    
     try {
         const user = req?.user?.user?.role;
         const { id,email } = req.query
