@@ -60,7 +60,8 @@ const deleteApplicationController = catchAsync(async (req, res) => {
              const position = application?.position;
              await Application.deleteOne({_id:id});
              await HiredStudents.deleteOne({studentId,position})
-            res.status(200).json({message:'application deleted succesfully'});
+            //  console.log({applicationId:id,checkApplication,deletedApplication,deletedHiring,message:'application deleted succesfully'});
+            res.status(200).json({id,message:'application deleted succesfully'});
     }
 })
 
