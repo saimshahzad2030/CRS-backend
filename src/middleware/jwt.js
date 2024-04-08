@@ -15,7 +15,8 @@ const jwtConfig = {
             const [bearer,token] = authHeader.split(" ");;
               jwt.verify(token, JWT_SECRET_KEY, function (err, decoded) {
                 if (err) {
-                    res.status(401).send("You are not authorized");
+                    res.status(401).json({ message: 'You are not authorized' })
+
                      
                 }
                 else {
@@ -27,7 +28,8 @@ const jwtConfig = {
             })
             }
             else{
-                res.status(401).send("You are not authorized");
+                res.status(401).json({ message: 'You are not authorized' })
+
 
 
             }
@@ -43,31 +45,24 @@ const jwtConfig = {
         const authHeader = req.headers.authorization;
         
         try{
-          if(authHeader){
-              const [bearer,token] = authHeader.split(" ");;
+            if (authHeader) {
+                const [bearer, token] = authHeader.split(" ");
                 jwt.verify(token, JWT_SECRET_KEY, function (err, decoded) {
-                  if (err) {
-                      res.status(401).send("You are not Authorized");
-                       
-                  }
-                  else {
-                    console.log(decoded.user.role)
-                    //   req.user = decoded
-                      res.status(200).json({message:"User Authorized",role:decoded.user.role});
-                   
-      
-                  }
-              })
-              }
-              else{
-                  res.status(401).send("You are not Authorized");
-  
-              }
+                    if (err) {
+                        throw new Error('You are not authorized');
+                    } else {
+                        // console.log(decoded.user.role);
+                        res.status(200).json({ message: "User Authorized", role: decoded.user.role });
+                    }
+                });
+            } else {
+                throw new Error('Something Went Wrong');
+            }
+            
           }
-          catch(error){
-             
-              res.status(520).send(error)
-          }
+          catch (error) {
+            res.status(520).send(error.message);
+        }
           
       },
       verifyAdmin(req, res, next){
@@ -77,14 +72,16 @@ const jwtConfig = {
           if(authHeader){
               const [bearer,token] = authHeader.split(" ");;
                 jwt.verify(token, JWT_SECRET_KEY, function (err, decoded) {
-                console.log(decoded.user)
+                // console.log(decoded.user)
                   if (err) {
-                      res.status(401).send("You are not authorized");
+                    res.status(401).json({ message: 'You are not authorized' })
+
                        
                   }
                   else if(decoded.user.role !== 'admin'){
                     console.log(decoded.newUser.role)
-                    res.status(401).send("You are not authorized");
+                    res.status(401).json({ message: 'You are not authorized' })
+
 
                   }
                   else {
@@ -96,7 +93,8 @@ const jwtConfig = {
               })
               }
               else{
-                  res.status(401).send("You are not authorized");
+                res.status(401).json({ message: 'You are not authorized' })
+
   
   
               }

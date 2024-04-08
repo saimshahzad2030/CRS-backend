@@ -10,8 +10,17 @@ const hiredStudentsController = catchAsync(async (req, res) => {
     }
     else {
             const companyId = req?.user?.user?._id;
-            const hirings = await HiredStudents.find({companyId});
-            res.status(200).json({data:hirings});
+
+            const { page} = req.query; 
+            const limit = 10;
+            const skip = (page - 1) * limit;
+            const hiredStudents = await HiredStudents.find({companyId}).skip(skip)
+            .limit(limit);
+        const totalPages = await HiredStudents.countDocuments({companyId})
+
+            const pages = Math.ceil(totalPages / 10) 
+            res.status(200).json({data:hiredStudents,message:'Hired students fetched succesfully',pages});
+ 
     }
 })
 const rejectHiringController = catchAsync(async (req, res) => {

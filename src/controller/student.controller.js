@@ -104,15 +104,27 @@ const fetchStudentDetailsController = catchAsync(async (req, res) => {
 const allStudentsDetails = async (req, res) => {
     try {
       console.log(req?.user?.user?.role)
-
+ 
+     
         if ( req?.user?.user?.role === 'company') {
-            const users = await Student.find({employmentstatus:'jobless'});
-            res.status(200).json({ data: users, message: 'Students Fetched' })
+            const { page} = req.query; 
+            const limit = 10;
+            const skip = (page - 1) * limit;
+            const students = await Student.find({employmentstatus:'jobless'}).skip(skip)
+            .limit(limit);
+        const totalPages = await Student.countDocuments({employmentstatus:'jobless'})
+
+            const pages = Math.ceil(totalPages / 10)
+            res.status(200).json({ data: students, message: 'Students Fetched',pages })
         }
         else if(req?.user?.user?.role === 'admin'){
             
-            const users = await Student.find({});
-            res.status(200).json({ data: users, message: 'Students Fetched' })
+            const students = await Student.find({}).skip(skip)
+            .limit(limit);
+        const totalPages = await Student.countDocuments({})
+
+            const pages = Math.ceil(totalPages / 10);
+            res.status(200).json({ data: students, message: 'Students Fetched',pages })
         }
         else {
             res.status(401).send("you are not authorized")
@@ -130,8 +142,14 @@ const allStudentsDetails = async (req, res) => {
 //admin
 const allStudentsDetailsAdmin = catchAsync(async (req, res) => {
    
-            const users = await Student.find({});
-            res.status(200).json({ data: users, message: 'Students Fetched' })
+    const { page} = req.query; 
+    const limit = 10;
+    const skip = (page - 1) * limit;
+    const users = await Student.find({}).skip(skip)
+    .limit(limit);
+    const totalPages = await Student.countDocuments({})
+    const pages = Math.ceil(totalPages / 10);
+    res.status(200).json({ data: users, message: 'Students Fetched',pages }); 
         
 })
 
@@ -180,13 +198,18 @@ const deleteStudentDetails = catchAsync(async (req, res) => {
 
 })
 const allCampusStudents = catchAsync(async (req, res) => {
-    
-    const users = await User.find({ role:'student'});
+ 
+    const { page} = req.query; 
+    const limit = 10;
+    const skip = (page - 1) * limit;
 
-            res.status(200).json({ data: users, message: 'Students Fetched' })
-        
-      
-    
+    const users = await User.find({ role: 'student' })
+                             .skip(skip)
+                             .limit(limit);
+    const totalPages = await User.countDocuments({ role: 'student'})
+    const pages = Math.ceil(totalPages / 10)
+    console.log(users)
+    res.status(200).json({ data: users, message: 'Students Fetched',pages });
    
 })
 

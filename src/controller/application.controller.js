@@ -72,8 +72,17 @@ const companyApplicationsController = catchAsync(async (req, res) => {
     }
     else {
         const companyId = req?.user?.user?._id;
-             const applications = await Application.find({companyId,status:'jobless'});
-            res.status(200).json({data:applications,message:'applications fetched succesfully'});
+        console.log(companyId)
+        const { page} = req.query; 
+            const limit = 10;
+            const skip = (page - 1) * limit;
+            const applications = await Application.find({companyId,status:'pending'}).skip(skip)
+            .limit(limit);
+        const totalPages = await Application.countDocuments({companyId,status:'pending'})
+
+            const pages = Math.ceil(totalPages / 10) 
+            console.log(applications)
+            res.status(200).json({data:applications,message:'applications fetched succesfully',pages});
     }
 })
 

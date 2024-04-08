@@ -1,8 +1,6 @@
 const User = require("../model/user.model");
 const Job = require("../model/job.model");
 const deleteCompany = async (req, res) => {
-  //function to add two numbers
-
   try {
     const user = req?.user?.user?.role;
     const { id, email } = req.query;
@@ -35,11 +33,20 @@ const deleteCompany = async (req, res) => {
 const allCompanies = async (req, res) => {
   try {
     if (req?.user?.user?.role == "admin") {
-      const users = await User.find({ role: "company" });
-      res.status(200).json({ data: users, message: "Commpanies Fetched" });
+      
+    const { page} = req.query; 
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
+      const users = await User.find({ role: "company" }).skip(skip)
+      .limit(limit);
+      console.log(users)
+      const totalPages = await User.countDocuments({role: "company"})
+    const pages = Math.ceil(totalPages / 10)
+      res.status(200).json({ data: users, message: "Commpanies Fetched",pages });
     } else {
-      res.status(401).send("you are not authorized");
-      // throw new Error({message:'You are not authorized'});
+      res.status(401).json({ message: 'You are not authorized' })
+
     }
   } catch (error) {
     return res.status(520).json({ message: error.message });

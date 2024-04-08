@@ -11,7 +11,7 @@ const addJobController = catchAsync(async (req, res) => {
 
     else {
 
-        const { companymessage, position,experience,location,availability } = req.body;
+        const { companymessage, position, experience, location, availability } = req.body;
         if (!companymessage || !position || !experience || !location || !availability) {
             res.status(400).send('All ds fields required');
             return;
@@ -21,13 +21,13 @@ const addJobController = catchAsync(async (req, res) => {
             const email = req?.user?.user?.email;
             const companyId = req?.user?.user?._id
             const companyname = req?.user?.user?.name;
-            const jobAlreadyExist =await Job.findOne({companyId,position,experience,availability})
-            if(jobAlreadyExist){
+            const jobAlreadyExist = await Job.findOne({ companyId, position, experience, availability })
+            if (jobAlreadyExist) {
                 return res.status(400).send('Job already exist')
             }
-            const jobDetails = new Job({companyemail:email, companyname,companymessage, position,experience,location,availability,companyId });
+            const jobDetails = new Job({ companyemail: email, companyname, companymessage, position, experience, location, availability, companyId });
             await jobDetails.save();
-            res.status(200).json({data:jobDetails, message:'Job added succesfully'});
+            res.status(200).json({ data: jobDetails, message: 'Job added succesfully' });
 
         }
 
@@ -37,22 +37,30 @@ const addJobController = catchAsync(async (req, res) => {
 
 const fetchJobsController = catchAsync(async (req, res) => {
     if (req?.user?.user.role != 'student') {
-            res.status(401).json({ message: 'You are not authorized' })
+        res.status(401).json({ message: 'You are not authorized' })
     }
     else {
-            const jobs = await Job.find({});
-            res.status(200).json({data:jobs,message:'data fetched'});
+        const jobs = await Job.find({});
+        res.status(200).json({ data: jobs, message: 'data fetched' });
     }
 })
 
 const fetchCompanyJobsController = catchAsync(async (req, res) => {
     if (req?.user?.user.role != 'company') {
-            res.status(401).json({ message: 'You are not authorized' })
+        res.status(401).json({ message: 'You are not authorized' })
     }
     else {
         const companyId = req?.user?.user?._id;
-            const jobs = await Job.find({companyId});
-            res.status(200).json({data:jobs,message:'data fetched'});
+          
+    const { page} = req.query; 
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
+        const jobs = await Job.find({ companyId }).skip(skip)
+        .limit(limit); 
+        const totalPages = await Job.countDocuments({companyId})
+      const pages = Math.ceil(totalPages / 10)
+        res.status(200).json({ data: jobs, message: 'data fetched' ,pages});
     }
 })
 
@@ -64,8 +72,8 @@ const updateJobDetailController = catchAsync(async (req, res) => {
     }
     else {
 
-        const { id,companymessage, position,experience,location,availability  } = req.body;
-
+        const { id, companymessage, position, experience, location, availability } = req.body;
+        console.log(req.body)
         if (!id || !companymessage || !position || !experience || !location || !availability) {
             res.status(400).send('All fields required');
             return;
@@ -73,13 +81,13 @@ const updateJobDetailController = catchAsync(async (req, res) => {
 
         else {
             const companyname = req?.user?.user?.name
-            const studentDetailExist = await Job.findOne({ _id:id })
+            const studentDetailExist = await Job.findOne({ _id: id })
             if (!studentDetailExist) {
                 res.status(402).json({ message: 'No entries found' })
                 return;
             }
-            const filter = { _id:id  };
-            const update = { $set: { companyname,companymessage, position,experience,location,availability  } };
+            const filter = { _id: id };
+            const update = { $set: { companyname, companymessage, position, experience, location, availability } };
 
             await Job.updateOne(filter, update);
 
@@ -98,14 +106,14 @@ const deleteJobDetailsController = catchAsync(async (req, res) => {
         res.status(401).json({ message: 'You are not authorized' })
         return;
     }
-    
-    const {id} = req.query
-    if(!id){
+
+    const { id } = req.query
+    if (!id) {
         return res.status(400).send('enter all fields')
     }
-    const studentDetailExist = await Job.deleteOne({ _id:id })
+    const studentDetailExist = await Job.deleteOne({ _id: id })
     if (!studentDetailExist) {
-        res.status(400).json({data:studentDetailExist, message: 'No details found' })
+        res.status(400).json({ data: studentDetailExist, message: 'No details found' })
 
     }
     else {
@@ -119,28 +127,35 @@ const deleteJobDetailsController = catchAsync(async (req, res) => {
 //admin
 const fetchJobsAdminController = catchAsync(async (req, res) => {
 
-      
-            const jobs = await Job.find({});
-            res.status(200).json({data:jobs,message:'data fetched'});
-    
+
+    const { page } = req.query;
+    const limit = 10;
+    const skip = (page - 1) * limit;
+    const jobs = await Job.find({}).skip(skip)
+        .limit(limit);
+    const totalPages = await Job.countDocuments({ })
+    const pages = Math.ceil(totalPages / 10)
+    res.status(200).json({ data: jobs, message: "Commpanies Fetched", pages });
+
 })
 
 const deleteJobDetailsAdminController = catchAsync(async (req, res) => {
-    const {id} = req.query
-    if(!id){
+    const { id } = req.query
+    if (!id) {
         return res.status(400).send('enter all fields')
     }
-    
-    const studentDetailExist = await Job.deleteOne({ _id:id })
-    if (!studentDetailExist) {
+
+    const jobDetailsExist = await Job.deleteOne({ _id: id })
+    console.log(jobDetailsExist)
+    if (!jobDetailsExist) {
         res.status(400).json({ message: 'No details found' })
     }
     else {
 
-        res.status(200).json({message: 'deleted succesfully' });
+        res.status(200).json({ message: 'deleted succesfully' });
     }
 
 })
 
 
-module.exports = {deleteJobDetailsAdminController,fetchJobsAdminController,addJobController,fetchJobsController,fetchCompanyJobsController,updateJobDetailController,deleteJobDetailsController}
+module.exports = { deleteJobDetailsAdminController, fetchJobsAdminController, addJobController, fetchJobsController, fetchCompanyJobsController, updateJobDetailController, deleteJobDetailsController }
