@@ -72,7 +72,7 @@ const companyApplicationsController = catchAsync(async (req, res) => {
     }
     else {
         const companyId = req?.user?.user?._id;
-             const applications = await Application.find({companyId});
+             const applications = await Application.find({companyId,status:'jobless'});
             res.status(200).json({data:applications,message:'applications fetched succesfully'});
     }
 })
